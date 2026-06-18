@@ -69,6 +69,7 @@ async function runWatch(
 
   return {
     label: watch.label,
+    available: result.available,
     newlyAvailable,
     stateChanged: !hadState || newlyAvailable.length > 0,
   };
@@ -77,6 +78,7 @@ async function runWatch(
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const notifyOnFirstRun = readBoolean(args["notify-on-first-run"]);
+  const notifyCurrent = readBoolean(args["notify-current"]);
   const settings: ScanSettings = {
     concurrency: readNumber(args.concurrency, 2),
     delayMs: readNumber(args["delay-ms"], 250),
@@ -93,9 +95,14 @@ async function main() {
 
   if (stateChanged) saveState(state);
 
-  const groupsToNotify = dedupeByMessageOrder(results);
+  const groupsToNotify = dedupeByMessageOrder(
+    results.map(result => ({
+      label: result.label,
+      newlyAvailable: notifyCurrent ? result.available : result.newlyAvailable,
+    }))
+  );
   if (groupsToNotify.length === 0) {
-    console.log("No new plates to notify.");
+    console.log(notifyCurrent ? "No currently available plates to notify." : "No new plates to notify.");
     return;
   }
 
@@ -104,7 +111,7 @@ async function main() {
     .join("\n\n");
 
   await sendNotification({
-    title: "New Florida plates available",
+    title: notifyCurrent ? "Current Florida plates available" : "New Florida plates available",
     message,
   });
 }

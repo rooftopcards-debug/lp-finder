@@ -10,6 +10,7 @@
     "monitor:one-char": "tsx src/monitor.ts --length=1 --exact --include-numbers --interval-minutes=60",
     "monitor:two-letters": "tsx src/monitor.ts --length=2 --exact --include-numbers --interval-minutes=60",
     "monitor:hourly": "tsx src/hourly-monitor.ts",
+    "monitor:current": "tsx src/hourly-monitor.ts --notify-current",
     "scan:one-char": "tsx src/cli.ts --length=1 --exact --include-numbers",
     "scan:two-letters": "tsx src/cli.ts --length=2 --exact --letters-only",
     "scan:cool": "tsx src/cli.ts --length=7 --up-to --only-numbers --cool-numbers",

@@ -10,6 +10,11 @@ on:
         required: false
         default: false
         type: boolean
+      send_current_available:
+        description: "Send current available plates even if already known"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: plate-monitor
@@ -48,7 +53,12 @@ jobs:
 
       - name: Check plates
         if: ${{ github.event_name != 'workflow_dispatch' || !inputs.send_test_notification }}
-        run: npm run monitor:hourly
+        run: |
+          if [ "${{ inputs.send_current_available }}" = "true" ]; then
+            npm run monitor:current
+          else
+            npm run monitor:hourly
+          fi
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
