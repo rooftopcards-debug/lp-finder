@@ -1,0 +1,5 @@
+node_modules/
+.env
+.env.*
+available_plates_*.txt
+data/phone-server.pid

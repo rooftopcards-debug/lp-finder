@@ -1,0 +1,34 @@
+{
+  "name": "licenseplate",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/cli.ts",
+    "legacy": "tsx check-fl-plates.ts",
+    "phone": "tsx src/server.ts",
+    "monitor:one-char": "tsx src/monitor.ts --length=1 --exact --include-numbers --interval-minutes=60",
+    "monitor:two-letters": "tsx src/monitor.ts --length=2 --exact --include-numbers --interval-minutes=60",
+    "monitor:hourly": "tsx src/hourly-monitor.ts",
+    "scan:one-char": "tsx src/cli.ts --length=1 --exact --include-numbers",
+    "scan:two-letters": "tsx src/cli.ts --length=2 --exact --letters-only",
+    "scan:cool": "tsx src/cli.ts --length=7 --up-to --only-numbers --cool-numbers",
+    "scan:same": "tsx src/cli.ts --length=7 --up-to --include-numbers --same-character",
+    "notify:test": "tsx src/test-notification.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cheerio": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
