@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      send_test_notification:
+        description: "Send a test phone notification instead of checking plates"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: plate-monitor
@@ -29,7 +35,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Send test notification
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.send_test_notification }}
+        run: npm run notify:test
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+
       - name: Check plates
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.send_test_notification }}
         run: npm run monitor:hourly
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
@@ -40,6 +58,7 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
       - name: Save seen plate state
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.send_test_notification }}
         run: |
           if [ -z "$(git status --porcelain -- data/plate-monitor-state.json)" ]; then
             echo "No state changes to save."
