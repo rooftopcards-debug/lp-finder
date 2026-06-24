@@ -8,12 +8,16 @@
     "exact_len-1_letters-numbers_no-hyphens_any-pattern_all-numbers": {
       "seen": [],
       "lastAvailable": [],
-      "lastRunAt": "2026-06-18T07:08:11.688Z"
+      "lastRunAt": "2026-06-24T04:35:27.888Z"
     },
     "exact_len-2_letters-numbers_no-hyphens_any-pattern_all-numbers": {
-      "seen": [],
-      "lastAvailable": [],
-      "lastRunAt": "2026-06-18T07:09:14.193Z"
+      "seen": [
+        "NZ"
+      ],
+      "lastAvailable": [
+        "NZ"
+      ],
+      "lastRunAt": "2026-06-24T04:36:16.211Z"
     },
     "up-to_len-7_numbers_no-hyphens_any-pattern_cool-numbers": {
       "seen": [
@@ -22,7 +26,7 @@
       "lastAvailable": [
         "543210"
       ],
-      "lastRunAt": "2026-06-18T07:09:19.456Z"
+      "lastRunAt": "2026-06-24T04:36:21.411Z"
     },
     "up-to_len-7_letters-numbers_no-hyphens_same-character_all-numbers": {
       "seen": [
@@ -33,7 +37,7 @@
         "BBBBBBB",
         "FFFFFFF"
       ],
-      "lastRunAt": "2026-06-18T07:09:29.167Z"
+      "lastRunAt": "2026-06-24T04:36:30.974Z"
     }
   }
 }
