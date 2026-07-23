@@ -1,6 +1,14 @@
 name: Plate Monitor
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/plate-monitor.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "src/**"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:

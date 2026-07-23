@@ -8,6 +8,8 @@ type Watch = {
   options: PlateOptions;
 };
 
+const NOTIFICATION_VERSION = 1;
+
 const WATCHES: Watch[] = [
   {
     label: "1 character",
@@ -94,6 +96,7 @@ async function main() {
     delayMs: readNumber(args["delay-ms"], 250),
   };
   const state = loadState();
+  const needsRecoveryNotification = (state.notificationVersion ?? 0) < NOTIFICATION_VERSION;
   const results = [];
   let stateChanged = false;
 
@@ -106,26 +109,40 @@ async function main() {
   const groupsToNotify = dedupeByMessageOrder(
     results.map(result => ({
       label: result.label,
-      newlyAvailable: notifyCurrent ? result.available : result.newlyAvailable,
+      newlyAvailable: notifyCurrent || needsRecoveryNotification ? result.available : result.newlyAvailable,
     }))
   );
-  if (groupsToNotify.length === 0) {
+  if (groupsToNotify.length === 0 && !needsRecoveryNotification) {
     console.log(notifyCurrent ? "No currently available plates to notify." : "No new plates to notify.");
     if (stateChanged) saveState(state);
     return;
   }
 
-  const message = groupsToNotify
+  const plateMessage = groupsToNotify
     .map(group => `${group.label}: ${formatPlateList(group.newlyAvailable)}`)
     .join("\n\n");
+  const title = needsRecoveryNotification
+    ? "Florida plate monitor restored"
+    : notifyCurrent
+      ? "Current Florida plates available"
+      : "New Florida plates available";
+  const message = needsRecoveryNotification
+    ? plateMessage
+      ? `Alerts are working again. Current availability:\n\n${plateMessage}`
+      : "Alerts are working again. This check found no currently available plates."
+    : plateMessage;
 
   const notification = await sendNotification({
-    title: notifyCurrent ? "Current Florida plates available" : "New Florida plates available",
+    title,
     message,
   });
   requireNotificationDelivery(notification);
   console.log(`Notification sent through: ${notification.channels.join(", ")}`);
 
+  if (needsRecoveryNotification) {
+    state.notificationVersion = NOTIFICATION_VERSION;
+    stateChanged = true;
+  }
   if (stateChanged) saveState(state);
 }
 

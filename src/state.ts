@@ -9,6 +9,7 @@ export type PlateCheckEntry = {
 
 export type PlateMonitorState = {
   checks: Record<string, PlateCheckEntry>;
+  notificationVersion?: number;
 };
 
 export type StateUpdateOptions = {
@@ -26,6 +27,9 @@ export function loadState(filePath = DEFAULT_STATE_FILE): PlateMonitorState {
   const parsed = JSON.parse(raw) as PlateMonitorState;
   return {
     checks: parsed.checks ?? {},
+    ...(typeof parsed.notificationVersion === "number"
+      ? { notificationVersion: parsed.notificationVersion }
+      : {}),
   };
 }
 

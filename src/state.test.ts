@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
-import { updateStateForRun, type PlateMonitorState } from "./state.js";
+import { loadState, saveState, updateStateForRun, type PlateMonitorState } from "./state.js";
 
 test("a first baseline is silent, then a newly available plate is reported", () => {
   const state: PlateMonitorState = { checks: {} };
@@ -25,4 +28,16 @@ test("notifyOnFirstRun reports the first available baseline", () => {
     updateStateForRun(state, "current", ["543210", "BBBBBBB"], { notifyOnFirstRun: true }),
     ["543210", "BBBBBBB"]
   );
+});
+
+test("notification version persists with monitor state", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "plate-monitor-state-"));
+  const filePath = path.join(directory, "state.json");
+
+  try {
+    saveState({ checks: {}, notificationVersion: 1 }, filePath);
+    assert.deepEqual(loadState(filePath), { checks: {}, notificationVersion: 1 });
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 });
