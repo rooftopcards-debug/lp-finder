@@ -72,6 +72,9 @@ async function handleScan(req: http.IncomingMessage, res: http.ServerResponse) {
     concurrency: 2,
     delayMs: 250,
   });
+  if (result.errors > 0) {
+    throw new Error(`Plate scan failed for ${result.errors} batch(es); partial results were discarded.`);
+  }
 
   const state = loadState();
   const key = getPlateCheckKey(options);

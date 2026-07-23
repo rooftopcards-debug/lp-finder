@@ -1,5 +1,5 @@
 import { parseArgs, readBoolean, readNumber } from "./args.js";
-import { sendNotification } from "./notify.js";
+import { requireNotificationDelivery, sendNotification } from "./notify.js";
 import { describePlateOptions, getPlateCheckKey, scanPlates, type PlateOptions, type ScanSettings } from "./plate-checker.js";
 import { loadState, saveState, type PlateMonitorState, updateStateForRun } from "./state.js";
 
@@ -49,6 +49,12 @@ function dedupeByMessageOrder(groups: Array<{ label: string; newlyAvailable: str
     .filter(group => group.newlyAvailable.length > 0);
 }
 
+function samePlates(left: string[], right: string[]) {
+  if (left.length !== right.length) return false;
+  const rightSet = new Set(right);
+  return left.every(plate => rightSet.has(plate));
+}
+
 async function runWatch(
   watch: Watch,
   state: PlateMonitorState,
@@ -57,9 +63,13 @@ async function runWatch(
 ) {
   const key = getPlateCheckKey(watch.options);
   const hadState = Boolean(state.checks[key]);
+  const previousAvailable = state.checks[key]?.lastAvailable ?? [];
 
   console.log(`Checking ${watch.label}: ${describePlateOptions(watch.options)}...`);
   const result = await scanPlates(watch.options, settings);
+  if (result.errors > 0) {
+    throw new Error(`${watch.label} scan failed for ${result.errors} batch(es); state was not saved.`);
+  }
   const newlyAvailable = updateStateForRun(state, key, result.available, { notifyOnFirstRun });
 
   console.log(
@@ -71,7 +81,7 @@ async function runWatch(
     label: watch.label,
     available: result.available,
     newlyAvailable,
-    stateChanged: !hadState || newlyAvailable.length > 0,
+    stateChanged: !hadState || !samePlates(previousAvailable, result.available),
   };
 }
 
@@ -93,8 +103,6 @@ async function main() {
     stateChanged = stateChanged || result.stateChanged;
   }
 
-  if (stateChanged) saveState(state);
-
   const groupsToNotify = dedupeByMessageOrder(
     results.map(result => ({
       label: result.label,
@@ -103,6 +111,7 @@ async function main() {
   );
   if (groupsToNotify.length === 0) {
     console.log(notifyCurrent ? "No currently available plates to notify." : "No new plates to notify.");
+    if (stateChanged) saveState(state);
     return;
   }
 
@@ -110,10 +119,14 @@ async function main() {
     .map(group => `${group.label}: ${formatPlateList(group.newlyAvailable)}`)
     .join("\n\n");
 
-  await sendNotification({
+  const notification = await sendNotification({
     title: notifyCurrent ? "Current Florida plates available" : "New Florida plates available",
     message,
   });
+  requireNotificationDelivery(notification);
+  console.log(`Notification sent through: ${notification.channels.join(", ")}`);
+
+  if (stateChanged) saveState(state);
 }
 
 main().catch(error => {

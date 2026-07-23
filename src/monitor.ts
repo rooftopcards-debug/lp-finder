@@ -1,5 +1,5 @@
 import { parseArgs, readBoolean, readNumber } from "./args.js";
-import { sendNotification } from "./notify.js";
+import { requireNotificationDelivery, sendNotification } from "./notify.js";
 import { describePlateOptions, getPlateCheckKey, scanPlates, type PlateOptions, type ScanSettings } from "./plate-checker.js";
 import { loadState, saveState, updateStateForRun } from "./state.js";
 
@@ -26,24 +26,32 @@ function getOptionsFromArgs(): PlateOptions {
 async function runOnce(options: PlateOptions, settings: ScanSettings) {
   console.log(`Checking ${describePlateOptions(options)}...`);
   const result = await scanPlates(options, settings);
+  if (result.errors > 0) {
+    throw new Error(`Plate scan failed for ${result.errors} batch(es); state was not saved.`);
+  }
   const state = loadState();
   const key = getPlateCheckKey(options);
   const newlyAvailable = updateStateForRun(state, key, result.available);
-  saveState(state);
 
   console.log(
     `Checked ${result.checked} plates in ${(result.durationMs / 1000).toFixed(1)}s. ` +
     `Available: ${result.available.length}. New: ${newlyAvailable.length}.`
   );
 
-  if (newlyAvailable.length === 0) return;
+  if (newlyAvailable.length === 0) {
+    saveState(state);
+    return;
+  }
 
   const preview = newlyAvailable.slice(0, 25).join(", ");
   const extra = newlyAvailable.length > 25 ? ` and ${newlyAvailable.length - 25} more` : "";
-  await sendNotification({
+  const notification = await sendNotification({
     title: "Florida plate availability",
     message: `${newlyAvailable.length} new ${describePlateOptions(options)} plate(s): ${preview}${extra}`,
   });
+  requireNotificationDelivery(notification);
+  console.log(`Notification sent through: ${notification.channels.join(", ")}`);
+  saveState(state);
 }
 
 async function main() {

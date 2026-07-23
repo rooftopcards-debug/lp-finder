@@ -139,7 +139,7 @@ function buildFormData(plates: string[], f: FormFields, batchSize: number): stri
   return params.toString();
 }
 
-function parseAvailable(html: string, plates: string[]): string[] {
+export function parseAvailableResponse(html: string, plates: string[]): string[] {
   const $ = cheerio.load(html);
   const labels = [
     "MainContent_lblOutPutRowOne",
@@ -157,8 +157,17 @@ function parseAvailable(html: string, plates: string[]): string[] {
     const label = labels[i];
     if (!label) return;
 
-    const text = $(`#${label}`).text().trim().toUpperCase();
-    if (text === "AVAILABLE") available.push(plate);
+    const output = $(`#${label}`);
+    if (output.length === 0) {
+      throw new Error(`Florida plate checker response is missing result row ${i + 1}.`);
+    }
+
+    const text = output.text().replace(/\s+/g, " ").trim().toUpperCase();
+    if (text === "AVAILABLE") {
+      available.push(plate);
+    } else if (text !== "NOT AVAILABLE") {
+      throw new Error(`Florida plate checker returned an unknown result for row ${i + 1}: ${text || "empty"}`);
+    }
   });
 
   return available;
@@ -339,7 +348,7 @@ async function refreshFormFields(): Promise<FormFields> {
 async function processBatch(batch: string[], formFields: FormFields, batchSize: number): Promise<string[]> {
   const body = buildFormData(batch, formFields, batchSize);
   const html = await fetchPage("POST", body);
-  return parseAvailable(html, batch);
+  return parseAvailableResponse(html, batch);
 }
 
 async function processBatchWithRetry(

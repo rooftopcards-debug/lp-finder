@@ -17,7 +17,7 @@
     "scan:same": "tsx src/cli.ts --length=7 --up-to --include-numbers --same-character",
     "notify:test": "tsx src/test-notification.ts",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsx --test src/state.test.ts src/notify.test.ts src/plate-checker.test.ts"
   },
   "keywords": [],
   "author": "",

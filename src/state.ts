@@ -43,8 +43,9 @@ export function updateStateForRun(
   const currentAvailable = [...new Set(available)].sort();
   const existing = state.checks[key];
   const previouslySeen = new Set(existing?.seen ?? []);
+  const previouslyAvailable = new Set(existing?.lastAvailable ?? []);
   const newlyAvailable = existing || options.notifyOnFirstRun
-    ? currentAvailable.filter(plate => !previouslySeen.has(plate))
+    ? currentAvailable.filter(plate => !previouslyAvailable.has(plate))
     : [];
 
   for (const plate of currentAvailable) previouslySeen.add(plate);

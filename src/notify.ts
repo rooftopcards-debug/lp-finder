@@ -10,6 +10,20 @@ export type NotificationResult = {
   channels: string[];
 };
 
+export function buildNtfyUrl(topicValue: string, serverValue?: string) {
+  const topic = topicValue.trim().replace(/^\/+|\/+$/g, "");
+  if (!topic) throw new Error("NTFY_TOPIC cannot be empty.");
+
+  const server = (serverValue?.trim() || "https://ntfy.sh").replace(/\/+$/g, "");
+  return `${server}/${encodeURIComponent(topic)}`;
+}
+
+export function requireNotificationDelivery(result: NotificationResult) {
+  if (!result.sent) {
+    throw new Error("No notification was delivered. Check the configured notification secrets and the delivery error above.");
+  }
+}
+
 function postForm(url: string, data: URLSearchParams, auth?: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const target = new URL(url);
@@ -115,14 +129,10 @@ async function sendPushover(input: NotificationInput) {
 }
 
 async function sendNtfy(input: NotificationInput) {
-  const topic = process.env.NTFY_TOPIC;
+  const topic = process.env.NTFY_TOPIC?.trim();
   if (!topic) return false;
 
-  const server = process.env.NTFY_SERVER ?? "https://ntfy.sh";
-  const normalizedServer = server.replace(/\/+$/g, "");
-  const normalizedTopic = topic.replace(/^\/+|\/+$/g, "");
-
-  await postText(`${normalizedServer}/${encodeURIComponent(normalizedTopic)}`, input.message, {
+  await postText(buildNtfyUrl(topic, process.env.NTFY_SERVER), input.message, {
     Title: input.title,
     Tags: "rotating_light",
     Priority: "high",
