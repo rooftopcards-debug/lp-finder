@@ -8,7 +8,7 @@
     "exact_len-1_letters-numbers_no-hyphens_any-pattern_all-numbers": {
       "seen": [],
       "lastAvailable": [],
-      "lastRunAt": "2026-11-09T07:57:18.219Z"
+      "lastRunAt": "2026-11-10T17:48:36.352Z"
     },
     "exact_len-2_letters-numbers_no-hyphens_any-pattern_all-numbers": {
       "seen": [
@@ -38,10 +38,8 @@
         "Y8",
         "YV"
       ],
-      "lastAvailable": [
-        "H3"
-      ],
-      "lastRunAt": "2026-11-09T07:58:09.067Z"
+      "lastAvailable": [],
+      "lastRunAt": "2026-11-10T17:49:24.928Z"
     },
     "up-to_len-7_numbers_no-hyphens_any-pattern_cool-numbers": {
       "seen": [
@@ -50,7 +48,7 @@
       "lastAvailable": [
         "543210"
       ],
-      "lastRunAt": "2026-11-09T07:58:14.502Z"
+      "lastRunAt": "2026-11-10T17:49:30.006Z"
     },
     "up-to_len-7_letters-numbers_no-hyphens_same-character_all-numbers": {
       "seen": [
@@ -65,7 +63,7 @@
         "FFFFFFF",
         "RRRRRRR"
       ],
-      "lastRunAt": "2026-11-09T07:58:24.420Z"
+      "lastRunAt": "2026-11-10T17:49:39.628Z"
     }
   },
   "notificationVersion": 1
